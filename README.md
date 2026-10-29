@@ -20,7 +20,7 @@ DSH already ships `@deepseek-ai/dsh-mcp-client`. This package contributes one
 declarative Cordis patch row that starts:
 
 ```text
-uvx ego-webqa@0.4.2 mcp
+uvx ego-webqa@0.5.0 mcp
 ```
 
 DSH supervises that process, discovers `audit_web_page`, applies normal tool
@@ -37,13 +37,13 @@ schemas, and release compatibility.
 Install Chromium once for the pinned ego-webqa version:
 
 ```bash
-uvx --from ego-webqa@0.4.2 playwright install chromium
+uvx --from ego-webqa@0.5.0 playwright install chromium
 ```
 
 On Linux CI hosts without a desktop browser, use:
 
 ```bash
-uvx --from ego-webqa@0.4.2 playwright install --with-deps chromium
+uvx --from ego-webqa@0.5.0 playwright install --with-deps chromium
 ```
 
 ## Install
@@ -84,8 +84,10 @@ Ask DSH to audit the deployed URL before delivery, for example:
 Audit https://preview.example before you call the page complete.
 ```
 
-The MCP tool accepts the URL and the existing bounded audit options. Its
-structured result includes:
+The MCP tool accepts the URL and the existing bounded audit options, including
+`browser_engine` with `chromium`, `firefox`, or `webkit`. Chromium remains the
+default; install the selected Playwright engine separately. Playwright WebKit is
+not a real-device Safari run. Its structured result includes:
 
 - delivery status (`pass`, `warn`, or `fail`);
 - aggregated blocking and warning findings;
@@ -147,13 +149,13 @@ causes are:
 Run the underlying server directly to isolate DSH from the Python package:
 
 ```bash
-uvx ego-webqa@0.4.2 mcp
+uvx ego-webqa@0.5.0 mcp
 ```
 
 For a normal CLI audit and complete evidence, run:
 
 ```bash
-uvx ego-webqa@0.4.2 https://preview.example --out .qa/dsh
+uvx ego-webqa@0.5.0 https://preview.example --out .qa/dsh
 ```
 
 ## License

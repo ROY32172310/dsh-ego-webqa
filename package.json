@@ -1,6 +1,6 @@
 {
   "name": "dsh-ego-webqa",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": false,
   "type": "module",
   "description": "Install ego-webqa's deterministic web-delivery audit as a DSH MCP tool.",
