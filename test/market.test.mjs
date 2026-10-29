@@ -70,3 +70,31 @@ test('market generator emits a versioned npm index and local icon', async () => 
     sortKeys: {},
   })
 })
+
+test('market generator can publish the plugin from npm', async () => {
+  const previous = process.env.SOURCE_DATE_EPOCH
+  const previousSource = process.env.DSH_MARKET_SOURCE
+  process.env.SOURCE_DATE_EPOCH = '1790000000'
+  process.env.DSH_MARKET_SOURCE = 'npm'
+  try {
+    await run(process.execPath, [resolve(root, 'scripts/build-market-index.mjs')], {
+      cwd: root,
+    })
+  } finally {
+    if (previous === undefined) {
+      delete process.env.SOURCE_DATE_EPOCH
+    } else {
+      process.env.SOURCE_DATE_EPOCH = previous
+    }
+    if (previousSource === undefined) {
+      delete process.env.DSH_MARKET_SOURCE
+    } else {
+      process.env.DSH_MARKET_SOURCE = previousSource
+    }
+  }
+
+  const manifest = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'))
+  const index = JSON.parse(await readFile(resolve(root, 'site/index.json'), 'utf8'))
+  assert.equal(index.plugins[0].versions[0].version, manifest.version)
+  assert.deepEqual(index.plugins[0].versions[0].source, { type: 'npm' })
+})

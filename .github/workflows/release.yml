@@ -25,6 +25,8 @@ jobs:
           node-version: "22"
           cache: npm
           registry-url: https://registry.npmjs.org
+      - name: Use npm with trusted publishing support
+        run: npm install --global npm@11
       - run: npm ci --legacy-peer-deps
       - name: Verify tag matches package version
         shell: bash
@@ -36,6 +38,4 @@ jobs:
       - run: npm run check
       - run: npm pack --dry-run
       - name: Publish package
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public --provenance

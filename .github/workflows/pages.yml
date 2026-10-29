@@ -35,6 +35,8 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - name: Build validated DSH market index
+        env:
+          DSH_MARKET_SOURCE: npm
         run: |
           SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)" npm run market:build
       - uses: actions/configure-pages@v5

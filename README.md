@@ -59,6 +59,7 @@ https://roy32172310.github.io/dsh-ego-webqa/index.json
 ```
 
 The index is validated with `@deepseek-ai/dsh-plugin-market-index` in CI.
+The deployed index resolves this release from the npm registry.
 
 Inspect the resulting layer without starting DSH:
 
