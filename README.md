@@ -20,7 +20,7 @@ DSH already ships `@deepseek-ai/dsh-mcp-client`. This package contributes one
 declarative Cordis patch row that starts:
 
 ```text
-uvx ego-webqa@0.5.0 mcp
+uvx ego-webqa@0.6.0 mcp
 ```
 
 DSH supervises that process, discovers `audit_web_page`, applies normal tool
@@ -37,13 +37,13 @@ schemas, and release compatibility.
 Install Chromium once for the pinned ego-webqa version:
 
 ```bash
-uvx --from ego-webqa@0.5.0 playwright install chromium
+uvx --from ego-webqa@0.6.0 playwright install chromium
 ```
 
 On Linux CI hosts without a desktop browser, use:
 
 ```bash
-uvx --from ego-webqa@0.5.0 playwright install --with-deps chromium
+uvx --from ego-webqa@0.6.0 playwright install --with-deps chromium
 ```
 
 ## Install
@@ -152,13 +152,13 @@ causes are:
 Run the underlying server directly to isolate DSH from the Python package:
 
 ```bash
-uvx ego-webqa@0.5.0 mcp
+uvx ego-webqa@0.6.0 mcp
 ```
 
 For a normal CLI audit and complete evidence, run:
 
 ```bash
-uvx ego-webqa@0.5.0 https://preview.example --out .qa/dsh
+uvx ego-webqa@0.6.0 https://preview.example --out .qa/dsh
 ```
 
 ## License
