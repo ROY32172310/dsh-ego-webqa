@@ -26,6 +26,7 @@ jobs:
           node-version: "22"
           cache: npm
           registry-url: https://registry.npmjs.org
+      - run: npm ci --legacy-peer-deps
       - name: Verify tag matches package version
         shell: bash
         run: |

@@ -52,6 +52,14 @@ uvx --from ego-webqa@0.4.2 playwright install --with-deps chromium
 dsh plugin --profile default add dsh-ego-webqa
 ```
 
+DSH 0.2.1+ can also discover it from the published format-1 market index:
+
+```text
+https://roy32172310.github.io/dsh-ego-webqa/index.json
+```
+
+The index is validated with `@deepseek-ai/dsh-plugin-market-index` in CI.
+
 Inspect the resulting layer without starting DSH:
 
 ```bash

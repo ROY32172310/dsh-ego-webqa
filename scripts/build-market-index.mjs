@@ -1,10 +1,12 @@
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { parseMarketIndex } from '@deepseek-ai/dsh-plugin-market-index'
 
 const root = resolve(import.meta.dirname, '..')
 const site = resolve(root, 'site')
 const manifest = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'))
 const now = Number(process.env.SOURCE_DATE_EPOCH ?? Math.floor(Date.now() / 1000))
+const indexUrl = 'https://roy32172310.github.io/dsh-ego-webqa/index.json'
 
 if (!Number.isSafeInteger(now) || now < 0) {
   throw new Error('SOURCE_DATE_EPOCH must be a non-negative integer')
@@ -23,6 +25,16 @@ const index = {
     en: 'Deterministic web-delivery checks for AI-generated pages.',
     zh: '面向 AI 生成页面的确定性交付粗检。',
   },
+  metadata: {
+    categories: {
+      browser: {
+        title: {
+          en: 'Browser & Web',
+          zh: '浏览器与网页',
+        },
+      },
+    },
+  },
   plugins: [
     {
       name: manifest.name,
@@ -37,6 +49,9 @@ const index = {
       repository: {
         url: 'https://github.com/ROY32172310/dsh-ego-webqa',
       },
+      metadata: {
+        category: 'browser',
+      },
       versions: [
         {
           version: manifest.version,
@@ -49,5 +64,7 @@ const index = {
   ],
 }
 
-await writeFile(resolve(site, 'index.json'), `${JSON.stringify(index, null, 2)}\n`, 'utf8')
+const validated = parseMarketIndex(index, indexUrl)
+
+await writeFile(resolve(site, 'index.json'), `${JSON.stringify(validated, null, 2)}\n`, 'utf8')
 console.log(`Built ${resolve(site, 'index.json')}`)

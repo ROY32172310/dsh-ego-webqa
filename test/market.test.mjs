@@ -3,6 +3,7 @@ import { execFile } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { promisify } from 'node:util'
+import { parseMarketIndex } from '@deepseek-ai/dsh-plugin-market-index'
 import test from 'node:test'
 
 const run = promisify(execFile)
@@ -28,8 +29,13 @@ test('market generator emits a versioned npm index and local icon', async () => 
   const plugin = index.plugins[0]
 
   assert.equal(index.format, 1)
+  assert.deepEqual(index.metadata.categories.browser.title, {
+    en: 'Browser & Web',
+    zh: '浏览器与网页',
+  })
   assert.equal(plugin.name, manifest.name)
-  assert.equal(plugin.icon, 'icons/ego-webqa.svg')
+  assert.equal(plugin.icon, 'https://roy32172310.github.io/dsh-ego-webqa/icons/ego-webqa.svg')
+  assert.equal(plugin.metadata.category, 'browser')
   assert.deepEqual(plugin.versions, [
     {
       version: manifest.version,
@@ -38,4 +44,15 @@ test('market generator emits a versioned npm index and local icon', async () => 
       engines: { dsh: manifest.engines.dsh },
     },
   ])
+
+  const validated = parseMarketIndex(
+    index,
+    'https://roy32172310.github.io/dsh-ego-webqa/index.json',
+  )
+  assert.deepEqual(validated.plugins[0].metadata, {
+    category: 'browser',
+    keywords: [],
+    labels: [],
+    sortKeys: {},
+  })
 })
