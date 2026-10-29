@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { parseMarketIndex } from '@deepseek-ai/dsh-plugin-market-index'
@@ -7,6 +8,17 @@ const site = resolve(root, 'site')
 const manifest = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'))
 const now = Number(process.env.SOURCE_DATE_EPOCH ?? Math.floor(Date.now() / 1000))
 const indexUrl = 'https://roy32172310.github.io/dsh-ego-webqa/index.json'
+const source =
+  process.env.DSH_MARKET_SOURCE === 'npm'
+    ? { type: 'npm' }
+    : {
+        type: 'git',
+        url: 'https://github.com/ROY32172310/dsh-ego-webqa.git',
+        commit: execFileSync('git', ['rev-parse', 'HEAD'], {
+          cwd: root,
+          encoding: 'utf8',
+        }).trim(),
+      }
 
 if (!Number.isSafeInteger(now) || now < 0) {
   throw new Error('SOURCE_DATE_EPOCH must be a non-negative integer')
@@ -56,7 +68,7 @@ const index = {
         {
           version: manifest.version,
           publishTimestamp: now,
-          source: { type: 'npm' },
+          source,
           engines: { dsh: manifest.engines.dsh },
         },
       ],

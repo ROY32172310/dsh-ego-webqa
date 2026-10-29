@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { execFile } from 'node:child_process'
+import { execFile, execFileSync } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { promisify } from 'node:util'
@@ -11,7 +11,9 @@ const root = resolve(import.meta.dirname, '..')
 
 test('market generator emits a versioned npm index and local icon', async () => {
   const previous = process.env.SOURCE_DATE_EPOCH
+  const previousSource = process.env.DSH_MARKET_SOURCE
   process.env.SOURCE_DATE_EPOCH = '1790000000'
+  delete process.env.DSH_MARKET_SOURCE
   try {
     await run(process.execPath, [resolve(root, 'scripts/build-market-index.mjs')], {
       cwd: root,
@@ -21,6 +23,11 @@ test('market generator emits a versioned npm index and local icon', async () => 
       delete process.env.SOURCE_DATE_EPOCH
     } else {
       process.env.SOURCE_DATE_EPOCH = previous
+    }
+    if (previousSource === undefined) {
+      delete process.env.DSH_MARKET_SOURCE
+    } else {
+      process.env.DSH_MARKET_SOURCE = previousSource
     }
   }
 
@@ -40,7 +47,14 @@ test('market generator emits a versioned npm index and local icon', async () => 
     {
       version: manifest.version,
       publishTimestamp: 1790000000,
-      source: { type: 'npm' },
+      source: {
+        type: 'git',
+        url: 'https://github.com/ROY32172310/dsh-ego-webqa.git',
+        commit: execFileSync('git', ['rev-parse', 'HEAD'], {
+          cwd: root,
+          encoding: 'utf8',
+        }).trim(),
+      },
       engines: { dsh: manifest.engines.dsh },
     },
   ])
