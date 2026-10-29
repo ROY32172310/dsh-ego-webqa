@@ -15,7 +15,6 @@ jobs:
     permissions:
       contents: read
       id-token: write
-      pages: write
     environment:
       name: npm
       url: https://www.npmjs.com/package/dsh-ego-webqa
@@ -40,11 +39,3 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public --provenance
-      - name: Build DSH market index
-        run: |
-          SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)" npm run market:build
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-      - uses: actions/deploy-pages@v4
