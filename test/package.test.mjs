@@ -58,3 +58,13 @@ test('release workflow verifies public registry visibility', async () => {
   assert.match(workflow, /npm view "\$\{package\}@\$\{version\}" version/)
   assert.match(workflow, /Trusted Publisher's direct 'npm publish' permission/)
 })
+
+test('refreshes the market index after a successful release', async () => {
+  const workflow = await read('.github/workflows/pages.yml')
+
+  assert.match(workflow, /workflow_run:\n\s+workflows:\n\s+- release\n\s+types:\n\s+- completed/)
+  assert.match(
+    workflow,
+    /github\.event\.workflow_run\.conclusion == 'success'/,
+  )
+})
