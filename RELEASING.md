@@ -79,6 +79,11 @@ The attestation list must include both the npm publish attestation and SLSA
 provenance. A successful publish must not create or require a repository
 secret.
 
+A transient 404 or stale `dist-tags.latest` immediately after the workflow ends
+does not by itself prove staged-only publishing. Retry the public Registry
+queries, inspect the version's timestamp and `_npmUser`, and check the
+attestation endpoint before changing permissions or approving a staged package.
+
 If the release job reports that the version is not publicly visible, do one of
 the following:
 
