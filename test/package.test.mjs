@@ -48,4 +48,13 @@ test('documents prerequisites, tool name, and the one-tool boundary', async () =
   assert.match(readme, /https:\/\/roy32172310\.github\.io\/dsh-ego-webqa\/index\.json/)
   assert.match(readme, /blocking page defect is a successful tool execution with a `fail` report/)
   assert.match(readme, /MCP server exposes one tool/)
+  assert.match(readme, /dsh plugin --profile web add dsh-ego-webqa/)
+})
+
+test('release workflow verifies public registry visibility', async () => {
+  const workflow = await read('.github/workflows/release.yml')
+
+  assert.match(workflow, /Verify package is publicly visible/)
+  assert.match(workflow, /npm view "\$\{package\}@\$\{version\}" version/)
+  assert.match(workflow, /Trusted Publisher's direct 'npm publish' permission/)
 })

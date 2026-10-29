@@ -26,8 +26,16 @@ The npm Trusted Publisher entry is:
 - workflow: `release.yml`;
 - environment: `npm`.
 
-Both `npm publish` and `npm stage publish` are allowed. The package requires 2FA
-for interactive publishing and rejects bypass-2FA tokens.
+`npm stage publish` is always allowed for Trusted Publishers created after
+2026-09-03. Direct `npm publish` is a separate permission and must be enabled
+explicitly in the Trusted Publisher configuration. The package requires 2FA for
+interactive publishing and rejects bypass-2FA tokens.
+
+If direct publishing is not enabled, npm can accept the release workflow while
+placing the version in the Staged Packages area. A maintainer must then approve
+it with 2FA. The release workflow now queries the public registry after upload
+and fails unless the exact package version is visible, so staged-only mode can
+no longer appear as a successful public release.
 
 ## Publish a version
 
@@ -54,7 +62,8 @@ for interactive publishing and rejects bypass-2FA tokens.
    ```
 
 The tag workflow verifies that the tag matches `package.json`, reruns all
-checks, and publishes through npm OIDC with provenance.
+checks, publishes through npm OIDC with provenance, and verifies that the exact
+version is visible in the public registry.
 
 ## Verify
 
@@ -69,3 +78,15 @@ curl -fsS \
 The attestation list must include both the npm publish attestation and SLSA
 provenance. A successful publish must not create or require a repository
 secret.
+
+If the release job reports that the version is not publicly visible, do one of
+the following:
+
+1. Enable direct publishing for the existing Trusted Publisher and rerun the
+   release workflow.
+2. Review the pending version in npm's **Staged Packages** area and approve it
+   with 2FA, then verify the registry and attestation again.
+
+Until the version is public, the Pages market index continues to advertise the
+current `dist-tags.latest` release rather than a version that users cannot
+install. Redeploy the Pages workflow after approval so the index advances.

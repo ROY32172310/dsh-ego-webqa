@@ -38,7 +38,14 @@ jobs:
         env:
           DSH_MARKET_SOURCE: npm
         run: |
-          SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)" npm run market:build
+          package_version="$(node -p "require('./package.json').version")"
+          market_version="$(npm view dsh-ego-webqa dist-tags.latest)"
+          if [[ "$market_version" != "$package_version" ]]; then
+            echo "::warning::dsh-ego-webqa@${package_version} is not public; market index will advertise ${market_version} until the release is approved."
+          fi
+          DSH_MARKET_VERSION="$market_version" \
+            SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)" \
+            npm run market:build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

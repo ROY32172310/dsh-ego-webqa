@@ -49,7 +49,7 @@ uvx --from ego-webqa@0.5.0 playwright install --with-deps chromium
 ## Install
 
 ```bash
-dsh plugin --profile default add dsh-ego-webqa
+dsh plugin --profile web add dsh-ego-webqa
 ```
 
 DSH 0.2.1+ can also discover it from the published format-1 market index:
@@ -59,19 +59,22 @@ https://roy32172310.github.io/dsh-ego-webqa/index.json
 ```
 
 The index is validated with `@deepseek-ai/dsh-plugin-market-index` in CI.
-The deployed index resolves this release from the npm registry.
+The deployed index resolves the newest publicly visible release from the npm
+registry. A staged-only package version is not advertised until it is approved.
 
 Inspect the resulting layer without starting DSH:
 
 ```bash
-dsh --profile default --dump-config
+dsh --profile web --dump-config
 ```
 
 Start DSH normally or explicitly select the profile:
 
 ```bash
-dsh --profile default
+dsh --profile web
 ```
+
+For another installed profile, replace `web` with that profile's name.
 
 The first MCP launch may take longer while `uvx` creates its isolated Python
 environment. Later launches reuse that cache.

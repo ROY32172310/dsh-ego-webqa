@@ -98,3 +98,37 @@ test('market generator can publish the plugin from npm', async () => {
   assert.equal(index.plugins[0].versions[0].version, manifest.version)
   assert.deepEqual(index.plugins[0].versions[0].source, { type: 'npm' })
 })
+
+test('market generator advertises only the resolved public version', async () => {
+  const previous = process.env.SOURCE_DATE_EPOCH
+  const previousSource = process.env.DSH_MARKET_SOURCE
+  const previousVersion = process.env.DSH_MARKET_VERSION
+  process.env.SOURCE_DATE_EPOCH = '1790000000'
+  process.env.DSH_MARKET_SOURCE = 'npm'
+  process.env.DSH_MARKET_VERSION = '0.1.1'
+  try {
+    await run(process.execPath, [resolve(root, 'scripts/build-market-index.mjs')], {
+      cwd: root,
+    })
+  } finally {
+    if (previous === undefined) {
+      delete process.env.SOURCE_DATE_EPOCH
+    } else {
+      process.env.SOURCE_DATE_EPOCH = previous
+    }
+    if (previousSource === undefined) {
+      delete process.env.DSH_MARKET_SOURCE
+    } else {
+      process.env.DSH_MARKET_SOURCE = previousSource
+    }
+    if (previousVersion === undefined) {
+      delete process.env.DSH_MARKET_VERSION
+    } else {
+      process.env.DSH_MARKET_VERSION = previousVersion
+    }
+  }
+
+  const index = JSON.parse(await readFile(resolve(root, 'site/index.json'), 'utf8'))
+  assert.equal(index.plugins[0].versions[0].version, '0.1.1')
+  assert.deepEqual(index.plugins[0].versions[0].source, { type: 'npm' })
+})

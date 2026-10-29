@@ -7,6 +7,7 @@ const root = resolve(import.meta.dirname, '..')
 const site = resolve(root, 'site')
 const manifest = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'))
 const now = Number(process.env.SOURCE_DATE_EPOCH ?? Math.floor(Date.now() / 1000))
+const marketVersion = process.env.DSH_MARKET_VERSION ?? manifest.version
 const indexUrl = 'https://roy32172310.github.io/dsh-ego-webqa/index.json'
 const source =
   process.env.DSH_MARKET_SOURCE === 'npm'
@@ -22,6 +23,9 @@ const source =
 
 if (!Number.isSafeInteger(now) || now < 0) {
   throw new Error('SOURCE_DATE_EPOCH must be a non-negative integer')
+}
+if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(marketVersion)) {
+  throw new Error('DSH_MARKET_VERSION must be a valid semantic version')
 }
 
 await mkdir(resolve(site, 'icons'), { recursive: true })
@@ -66,7 +70,7 @@ const index = {
       },
       versions: [
         {
-          version: manifest.version,
+          version: marketVersion,
           publishTimestamp: now,
           source,
           engines: { dsh: manifest.engines.dsh },

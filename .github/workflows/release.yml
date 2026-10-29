@@ -39,3 +39,23 @@ jobs:
       - run: npm pack --dry-run
       - name: Publish package
         run: npm publish --access public --provenance
+      - name: Verify package is publicly visible
+        shell: bash
+        run: |
+          set -euo pipefail
+          package="$(node -p "require('./package.json').name")"
+          version="$(node -p "require('./package.json').version")"
+
+          for attempt in $(seq 1 18); do
+            published="$(npm view "${package}@${version}" version 2>/dev/null || true)"
+            if [[ "$published" == "$version" ]]; then
+              echo "Verified ${package}@${version} in the public npm registry."
+              exit 0
+            fi
+            echo "Registry is not visible yet (attempt ${attempt}/18); retrying in 5s."
+            sleep 5
+          done
+
+          echo "::error::${package}@${version} was not publicly visible after 90s."
+          echo "::error::Check the Trusted Publisher's direct 'npm publish' permission; staged-only publishing must be approved manually."
+          exit 1
