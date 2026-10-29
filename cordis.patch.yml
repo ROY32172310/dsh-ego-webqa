@@ -1,0 +1,23 @@
+# DSH bundle patch for ego-webqa.
+#
+# DSH already owns a native MCP client. This bundle intentionally adds only the
+# MCP connection row; the Python ego-webqa package remains the sole
+# implementation of browser checks and report generation.
+- insert:
+    - id: ego-webqa
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: ego_webqa
+        transport: stdio
+        command: uvx
+        args:
+          - ego-webqa@0.4.2
+          - mcp
+        cwd: !!js process.cwd()
+        toolCallTimeoutMs: 90000
+        failOnStartupError: true
+        reconnect:
+          enabled: true
+          initialDelayMs: 500
+          maxDelayMs: 30000
+          maxAttempts: 10

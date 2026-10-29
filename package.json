@@ -1,0 +1,51 @@
+{
+  "name": "dsh-ego-webqa",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "Install ego-webqa's deterministic web-delivery audit as a DSH MCP tool.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "mcp",
+    "playwright",
+    "web-qa",
+    "ai-generated"
+  ],
+  "homepage": "https://github.com/ROY32172310/dsh-ego-webqa",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ROY32172310/dsh-ego-webqa.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ROY32172310/dsh-ego-webqa/issues"
+  },
+  "author": "Roy",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "files": [
+    "cordis.patch.yml",
+    "icon.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "dsh": ">=0.1.5-rc.1 <0.3.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-mcp-client": ">=0.1.5-rc.1 <0.3.0"
+  },
+  "scripts": {
+    "check": "node scripts/check-package.mjs",
+    "market:build": "node scripts/build-market-index.mjs",
+    "test": "node --test"
+  }
+}
