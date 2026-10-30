@@ -11,7 +11,7 @@
         transport: stdio
         command: uvx
         args:
-          - ego-webqa@0.6.0
+          - ego-webqa@0.7.0
           - mcp
         cwd: !!js process.cwd()
         toolCallTimeoutMs: 90000
