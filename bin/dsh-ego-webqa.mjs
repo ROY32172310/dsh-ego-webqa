@@ -421,7 +421,7 @@ async function inspectBrowser(uvx) {
       'browser',
       'fail',
       'Playwright Chromium is not ready',
-      hint || `Run: uvx --from ego-webqa==${PINNED_QA_VERSION} playwright install chromium`,
+      hint || `Run: uvx --from ego-webqa==${PINNED_QA_VERSION} ego-webqa setup`,
       { doctor: report },
     )
   }
@@ -811,14 +811,14 @@ async function installBundle(dshPath, pnpmPath, profile) {
   return result.stdout
 }
 
-async function installChromium(uvx) {
+async function prepareBrowser(uvx) {
   const result = await runCommand(
     uvx,
-    ['--from', `ego-webqa==${PINNED_QA_VERSION}`, 'playwright', 'install', 'chromium'],
+    ['--from', `ego-webqa==${PINNED_QA_VERSION}`, 'ego-webqa', 'setup'],
     { timeoutMs: INSTALL_TIMEOUT_MS },
   )
   if (result.code !== 0) {
-    throw new Error(result.stderr || result.stdout || 'Chromium installation failed')
+    throw new Error(result.stderr || result.stdout || 'ego-webqa browser setup failed')
   }
   return result.stdout
 }
@@ -845,7 +845,7 @@ export async function setup(options = {}) {
   }
   let chromiumOutput = ''
   if (!options.skipBrowser) {
-    chromiumOutput = await installChromium(uvx.path)
+    chromiumOutput = await prepareBrowser(uvx.path)
   }
 
   const finalDoctor = await doctor({ ...options, profile })
@@ -1077,7 +1077,7 @@ Options:
   --uvx PATH           uvx executable
   --apply-path         Add the uvx directory to the Windows user PATH
   --skip-add           Skip dsh plugin installation
-  --skip-browser       Skip Playwright Chromium installation
+  --skip-browser       Skip ego-webqa browser setup
   --skip-probe         Doctor: skip MCP handshake
   --json               Emit machine-readable JSON
   -h, --help           Show this help

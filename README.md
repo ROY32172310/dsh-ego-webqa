@@ -21,15 +21,15 @@ not all share the same `PATH`:
 
 ```powershell
 # Read-only preflight. It does not install anything.
-npx -y dsh-ego-webqa@0.1.5 doctor --profile web
+npx -y dsh-ego-webqa@0.1.6 doctor --profile web
 
 # Install the bundle, prepare Chromium, and safely add uvx to user PATH if needed.
-npx -y dsh-ego-webqa@0.1.5 setup --profile web --apply-path
+npx -y dsh-ego-webqa@0.1.6 setup --profile web --apply-path
 
 # Fully quit DSH and start the desktop application again.
 
 # Run one clean page and one known-broken page through the real MCP server.
-npx -y dsh-ego-webqa@0.1.5 verify --url https://preview.example
+npx -y dsh-ego-webqa@0.1.6 verify --url https://preview.example
 ```
 
 `doctor` is read-only. `setup` fails visibly instead of silently disabling QA,
@@ -43,7 +43,7 @@ DSH already ships `@deepseek-ai/dsh-mcp-client`. This package contributes one
 declarative Cordis patch row that starts:
 
 ```text
-uvx ego-webqa@0.8.0 mcp
+uvx ego-webqa@0.8.1 mcp
 ```
 
 DSH supervises that process, discovers `audit_web_page`, applies normal tool
@@ -56,20 +56,21 @@ schemas, and release compatibility.
 - DSH `>=0.1.5-rc.1 <0.3.0`
 - Node.js 20 or newer when using the `npx` doctor/setup/verify helper
 - `uv` / `uvx` available on `PATH`
-- A Playwright Chromium browser available to the `uvx` environment
+- A Playwright Chromium headless runtime available to the `uvx` environment
 - pnpm available to the `dsh plugin` command; the setup helper can use a
   DSH-bundled pnpm through `--pnpm` or `--dsh-home`
 
-Install Chromium once for the pinned ego-webqa version:
+Prepare the pinned ego-webqa browser once. Setup is idempotent, skips downloads
+when the browser already launches, and installs only Chromium's headless shell:
 
 ```bash
-uvx --from ego-webqa==0.8.0 playwright install chromium
+uvx --from ego-webqa==0.8.1 ego-webqa setup
 ```
 
 On Linux CI hosts without a desktop browser, use:
 
 ```bash
-uvx --from ego-webqa==0.8.0 playwright install --with-deps chromium
+uvx --from ego-webqa==0.8.1 ego-webqa setup --with-deps
 ```
 
 ## Manual install
@@ -135,8 +136,9 @@ and must not be presented as a page-quality failure.
   existing explicit live-mode configuration in the Python tool.
 - The MCP client scrubs credential-shaped environment variables before starting
   the child process.
-- This bundle does not install Python, `uvx`, or Chromium implicitly. Missing
-  prerequisites fail visibly instead of silently disabling QA.
+- The MCP row does not install Python, `uvx`, or Chromium implicitly. The
+  explicit setup helper invokes `ego-webqa setup`; missing prerequisites fail
+  visibly instead of silently disabling QA.
 
 ## Versioning
 
@@ -178,13 +180,13 @@ causes are:
 Run the underlying server directly to isolate DSH from the Python package:
 
 ```bash
-uvx ego-webqa@0.8.0 mcp
+uvx ego-webqa@0.8.1 mcp
 ```
 
 For a normal CLI audit and complete evidence, run:
 
 ```bash
-uvx ego-webqa@0.8.0 https://preview.example --out .qa/dsh
+uvx ego-webqa@0.8.1 https://preview.example --out .qa/dsh
 ```
 
 ### Windows startup and workspace failures

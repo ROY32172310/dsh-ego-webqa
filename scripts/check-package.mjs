@@ -23,6 +23,6 @@ assert.match(patch, /- ego-webqa@\d+\.\d+\.\d+/)
 assert.match(patch, /- mcp/)
 assert.match(patch, /failOnStartupError: true/)
 assert.match(readme, /mcp__ego_webqa__audit_web_page/)
-assert.match(readme, /uvx --from ego-webqa==\d+\.\d+\.\d+ playwright install chromium/)
+assert.match(readme, /uvx --from ego-webqa==\d+\.\d+\.\d+ ego-webqa setup/)
 
 console.log('DSH bundle manifest and contract check passed.')
