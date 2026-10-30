@@ -29,7 +29,7 @@ test('routes through DSH native MCP client and the stable ego-webqa entry', asyn
   assert.match(patch, /name: '@deepseek-ai\/dsh-mcp-client'/)
   assert.match(patch, /serverName: ego_webqa/)
   assert.match(patch, /command: uvx/)
-  assert.match(patch, /- ego-webqa@0\.8\.1/)
+  assert.match(patch, /- ego-webqa@0\.8\.2/)
   assert.match(patch, /- mcp/)
   assert.match(patch, /cwd: !!js process\.cwd\(\)/)
 })
@@ -47,7 +47,7 @@ test('documents prerequisites, tool name, and the one-tool boundary', async () =
   const readme = await read('README.md')
 
   assert.match(readme, /mcp__ego_webqa__audit_web_page/)
-  assert.match(readme, /uvx --from ego-webqa==0\.8\.1 ego-webqa setup/)
+  assert.match(readme, /uvx --from ego-webqa==0\.8\.2 ego-webqa setup/)
   assert.match(readme, /https:\/\/roy32172310\.github\.io\/dsh-ego-webqa\/index\.json/)
   assert.match(readme, /blocking page defect is a successful tool execution with a `fail` report/)
   assert.match(readme, /MCP server exposes one tool/)

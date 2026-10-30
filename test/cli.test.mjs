@@ -40,7 +40,7 @@ test('CLI parses the documented commands and options', () => {
 
 test('CLI reads one exact QA pin and detects PATH directories', async () => {
   const patch = await readFile(resolve(root, 'cordis.patch.yml'), 'utf8')
-  assert.equal(extractPinnedVersion(patch), '0.8.1')
+  assert.equal(extractPinnedVersion(patch), '0.8.2')
   assert.equal(pathIncludesDirectory('/one:/two', '/two'), true)
   assert.equal(pathIncludesDirectory('/one:/two', '/three'), false)
   assert.throws(() => extractPinnedVersion('- ego-webqa mcp'), /exact ego-webqa version/)
@@ -102,10 +102,10 @@ if [ "$1" = "--version" ]; then echo "0.2.1"; exit 0; fi
 if [ "$1" = "--profile" ]; then
   echo "id: ego-webqa"
   echo "serverName: ego_webqa"
-  echo "command: uvx ego-webqa@0.8.1 mcp"
+  echo "command: uvx ego-webqa@0.8.2 mcp"
   exit 0
 fi
-if [ "$1" = "plugin" ]; then echo "installed dsh-ego-webqa@0.1.7"; exit 0; fi
+if [ "$1" = "plugin" ]; then echo "installed dsh-ego-webqa@0.1.8"; exit 0; fi
 exit 1
 `,
         'utf8',
@@ -118,7 +118,7 @@ if [ "$1" = "--version" ]; then echo "uvx 0.12.18"; exit 0; fi
 if [ "$1" = "--from" ]; then
   if [ "$4" = "setup" ]; then echo "browser setup complete"; exit 0; fi
   if [ "$4" = "doctor" ]; then echo '{"status":"ok","checks":[],"runtime":{}}'; exit 0; fi
-  echo "ego-webqa 0.8.1"
+  echo "ego-webqa 0.8.2"
   exit 0
 fi
 exit 1
@@ -138,7 +138,7 @@ exit 1
 
       assert.equal(report.status, 'ok')
       assert.equal(report.restart_required, true)
-      assert.match(report.plugin_output, /installed dsh-ego-webqa@0\.1\.7/)
+      assert.match(report.plugin_output, /installed dsh-ego-webqa@0\.1\.8/)
       assert.match(report.chromium_output, /browser setup complete/)
       assert.equal(report.doctor.checks.find((item) => item.id === 'dsh_profile').status, 'ok')
     } finally {

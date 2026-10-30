@@ -21,15 +21,15 @@ not all share the same `PATH`:
 
 ```powershell
 # Read-only preflight. It does not install anything.
-npx -y dsh-ego-webqa@0.1.7 doctor --profile web
+npx -y dsh-ego-webqa@0.1.8 doctor --profile web
 
 # Install the bundle, prepare Chromium, and safely add uvx to user PATH if needed.
-npx -y dsh-ego-webqa@0.1.7 setup --profile web --apply-path
+npx -y dsh-ego-webqa@0.1.8 setup --profile web --apply-path
 
 # Fully quit DSH and start the desktop application again.
 
 # Run one clean page and one known-broken page through the real MCP server.
-npx -y dsh-ego-webqa@0.1.7 verify --url https://preview.example
+npx -y dsh-ego-webqa@0.1.8 verify --url https://preview.example
 ```
 
 `doctor` is read-only. `setup` fails visibly instead of silently disabling QA,
@@ -43,7 +43,7 @@ DSH already ships `@deepseek-ai/dsh-mcp-client`. This package contributes one
 declarative Cordis patch row that starts:
 
 ```text
-uvx ego-webqa@0.8.1 mcp
+uvx ego-webqa@0.8.2 mcp
 ```
 
 DSH supervises that process, discovers `audit_web_page`, applies normal tool
@@ -64,13 +64,13 @@ Prepare the pinned ego-webqa browser once. Setup is idempotent, skips downloads
 when the browser already launches, and installs only Chromium's headless shell:
 
 ```bash
-uvx --from ego-webqa==0.8.1 ego-webqa setup
+uvx --from ego-webqa==0.8.2 ego-webqa setup
 ```
 
 On Linux CI hosts without a desktop browser, use:
 
 ```bash
-uvx --from ego-webqa==0.8.1 ego-webqa setup --with-deps
+uvx --from ego-webqa==0.8.2 ego-webqa setup --with-deps
 ```
 
 ## Manual install
@@ -180,13 +180,13 @@ causes are:
 Run the underlying server directly to isolate DSH from the Python package:
 
 ```bash
-uvx ego-webqa@0.8.1 mcp
+uvx ego-webqa@0.8.2 mcp
 ```
 
 For a normal CLI audit and complete evidence, run:
 
 ```bash
-uvx ego-webqa@0.8.1 https://preview.example --out .qa/dsh
+uvx ego-webqa@0.8.2 https://preview.example --out .qa/dsh
 ```
 
 ### Windows startup and workspace failures
