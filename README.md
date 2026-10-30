@@ -21,21 +21,21 @@ not all share the same `PATH`:
 
 ```powershell
 # Read-only preflight. It does not install anything.
-npx -y dsh-ego-webqa@0.1.6 doctor --profile web
+npx -y dsh-ego-webqa@0.1.7 doctor --profile web
 
 # Install the bundle, prepare Chromium, and safely add uvx to user PATH if needed.
-npx -y dsh-ego-webqa@0.1.6 setup --profile web --apply-path
+npx -y dsh-ego-webqa@0.1.7 setup --profile web --apply-path
 
 # Fully quit DSH and start the desktop application again.
 
 # Run one clean page and one known-broken page through the real MCP server.
-npx -y dsh-ego-webqa@0.1.6 verify --url https://preview.example
+npx -y dsh-ego-webqa@0.1.7 verify --url https://preview.example
 ```
 
 `doctor` is read-only. `setup` fails visibly instead of silently disabling QA,
 backs up every Windows user-PATH change under `%USERPROFILE%\.dsh-ego-webqa`,
-and does not modify workspace ACLs. On a DSH installation with a bundled pnpm,
-pass `--dsh-home D:\DSH` if automatic discovery cannot find it.
+and does not modify workspace ACLs. It automatically discovers pnpm from the
+DSH desktop runtime and creates a temporary shim for `dsh plugin`.
 
 ## Why a bundle instead of another tool implementation
 
@@ -57,8 +57,8 @@ schemas, and release compatibility.
 - Node.js 20 or newer when using the `npx` doctor/setup/verify helper
 - `uv` / `uvx` available on `PATH`
 - A Playwright Chromium headless runtime available to the `uvx` environment
-- pnpm available to the `dsh plugin` command; the setup helper can use a
-  DSH-bundled pnpm through `--pnpm` or `--dsh-home`
+- pnpm available to the `dsh plugin` command; the setup helper automatically
+  discovers the pnpm bundled with the DSH desktop runtime
 
 Prepare the pinned ego-webqa browser once. Setup is idempotent, skips downloads
 when the browser already launches, and installs only Chromium's headless shell:
@@ -191,9 +191,9 @@ uvx ego-webqa@0.8.1 https://preview.example --out .qa/dsh
 
 ### Windows startup and workspace failures
 
-- If `dsh plugin` reports that pnpm is unavailable, pass the pnpm path
-  explicitly: `setup --pnpm <path-to-pnpm.cmd>`. A temporary shim works for one
-  machine, but a user-level pnpm or DSH-bundled pnpm is more durable.
+- If the setup helper cannot discover pnpm, pass it explicitly with
+  `setup --pnpm <path-to-pnpm.cmd>` or point at the desktop installation with
+  `--dsh-home <path>`. The helper creates and removes its own temporary shim.
 - If `uvx` is installed but DSH cannot see it, use `setup --apply-path`. The
   original user PATH is saved before any change. A complete DSH restart is
   required because desktop processes do not necessarily receive a new PATH

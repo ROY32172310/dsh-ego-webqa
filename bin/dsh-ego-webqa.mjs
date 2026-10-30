@@ -2,9 +2,18 @@
 
 import { spawn } from 'node:child_process'
 import { constants as fsConstants } from 'node:fs'
-import { access, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
+import {
+  access,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  realpath,
+  rm,
+  writeFile,
+} from 'node:fs/promises'
 import { createServer } from 'node:http'
-import { homedir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { delimiter, dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
@@ -84,12 +93,17 @@ function optionKey(argument) {
     .replace(/-([a-z])/g, (_, character) => character.toUpperCase())
 }
 
-function executableExtensions() {
-  if (!WINDOWS) {
+export function executableExtensions(
+  windows = WINDOWS,
+  raw = process.env.PATHEXT || '.EXE;.CMD;.BAT;.COM',
+) {
+  if (!windows) {
     return ['']
   }
-  const raw = process.env.PATHEXT || '.EXE;.CMD;.BAT;.COM'
-  return ['', ...raw.split(';').filter(Boolean).map((item) => item.toLowerCase())]
+  return raw
+    .split(';')
+    .filter(Boolean)
+    .map((item) => item.toLowerCase())
 }
 
 function pathDirectories(value = process.env.PATH || process.env.Path || '') {
@@ -109,7 +123,10 @@ export function pathIncludesDirectory(value, directory) {
 }
 
 function commonBinDirectories(dshHome = '') {
-  const directories = [join(homedir(), '.local', 'bin')]
+  const directories = [
+    join(homedir(), '.local', 'bin'),
+    join(homedir(), '.dsh', '.dsh-tools', 'bin'),
+  ]
   if (WINDOWS) {
     if (process.env.LOCALAPPDATA) {
       directories.push(join(process.env.LOCALAPPDATA, 'Programs', 'uv'))
@@ -134,9 +151,21 @@ async function isExecutable(path) {
 export async function findExecutable(name, explicit = '', extraDirectories = []) {
   const candidates = []
   if (explicit) {
-    candidates.push(resolve(explicit))
+    const resolved = resolve(explicit)
+    candidates.push(resolved)
+    if (WINDOWS && !/\.[a-z0-9]+$/i.test(resolved)) {
+      for (const extension of executableExtensions()) {
+        candidates.push(`${resolved}${extension}`)
+      }
+    }
   } else if (name.includes('/') || (WINDOWS && name.includes('\\'))) {
-    candidates.push(resolve(name))
+    const resolved = resolve(name)
+    candidates.push(resolved)
+    if (WINDOWS && !/\.[a-z0-9]+$/i.test(resolved)) {
+      for (const extension of executableExtensions()) {
+        candidates.push(`${resolved}${extension}`)
+      }
+    }
   } else {
     const directories = [
       ...pathDirectories(),
@@ -164,6 +193,10 @@ function quoteForCmd(value) {
   return `"${value.replaceAll('"', '""')}"`
 }
 
+export function commandLineForCmd(command, args) {
+  return `call ${[command, ...args].map(quoteForCmd).join(' ')}`
+}
+
 function spawnProcess(command, args, options = {}) {
   const {
     cwd = process.cwd(),
@@ -171,11 +204,11 @@ function spawnProcess(command, args, options = {}) {
     stdin = false,
   } = options
   if (WINDOWS && /\.(?:cmd|bat)$/i.test(command)) {
-    const line = [command, ...args].map(quoteForCmd).join(' ')
-    return spawn(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', line], {
+    return spawn(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', commandLineForCmd(command, args)], {
       cwd,
       env,
       windowsHide: true,
+      windowsVerbatimArguments: true,
       stdio: [stdin ? 'pipe' : 'ignore', 'pipe', 'pipe'],
     })
   }
@@ -299,8 +332,40 @@ async function inspectDsh(options, dshHome) {
 async function inspectPnpm(options, dshHome) {
   const pnpm = await findExecutable('pnpm', options.pnpm || '', [dshHome].filter(Boolean))
   if (!pnpm) {
+    const bundled = await findBundledPnpm(dshHome)
+    if (bundled) {
+      const version = await runCommand(
+        bundled.node,
+        [bundled.script, '--version'],
+        { timeoutMs: 20_000 },
+      )
+      if (version.code === 0) {
+        return {
+          path: '',
+          runtime: bundled,
+          check: check(
+            'pnpm',
+            'ok',
+            `pnpm ${version.stdout}: DSH bundled runtime`,
+            '',
+            { bundled: true, script: bundled.script },
+          ),
+        }
+      }
+      return {
+        path: '',
+        runtime: bundled,
+        check: check(
+          'pnpm',
+          'warn',
+          'DSH bundled pnpm could not run',
+          version.stderr || version.stdout || 'Repair the DSH desktop runtime.',
+        ),
+      }
+    }
     return {
       path: '',
+      runtime: undefined,
       check: check(
         'pnpm',
         'warn',
@@ -323,8 +388,33 @@ async function inspectPnpm(options, dshHome) {
   }
   return {
     path: pnpm,
+    runtime: undefined,
     check: check('pnpm', 'ok', `pnpm ${version.stdout}: ${pnpm}`),
   }
+}
+
+async function findBundledPnpm(dshHome) {
+  const roots = [
+    dshHome ? join(dshHome, 'dsh-runtimes') : '',
+    join(homedir(), '.dsh', 'dsh-runtimes'),
+  ].filter(Boolean)
+  for (const root of new Set(roots)) {
+    let runtimes
+    try {
+      runtimes = await readdir(root, { withFileTypes: true })
+    } catch {
+      continue
+    }
+    for (const runtime of runtimes.filter((item) => item.isDirectory())) {
+      const base = join(root, runtime.name, 'dependencies')
+      const node = join(base, 'node', 'bin', WINDOWS ? 'node.exe' : 'node')
+      const script = join(base, 'pnpm', 'bin', 'pnpm.cjs')
+      if ((await isExecutable(node)) && (await isExecutable(script))) {
+        return { node, script }
+      }
+    }
+  }
+  return undefined
 }
 
 async function inspectUvx(options) {
@@ -783,32 +873,47 @@ async function ensureUvxVisible(uvxPath, options) {
   return addWindowsUserPath(directory)
 }
 
-async function installBundle(dshPath, pnpmPath, profile) {
+async function installBundle(dshPath, pnpmRuntime, pnpmPath, profile) {
   if (!dshPath) {
     throw new Error('DSH CLI was not found; pass --dsh <path-to-dsh>')
   }
-  const env = {
-    ...process.env,
-    PATH: pnpmPath
-      ? `${dirname(pnpmPath)}${delimiter}${process.env.PATH || ''}`
-      : process.env.PATH || '',
-    Path: pnpmPath
-      ? `${dirname(pnpmPath)}${delimiter}${process.env.Path || process.env.PATH || ''}`
-      : process.env.Path || process.env.PATH || '',
+  let shimDirectory = ''
+  try {
+    if (pnpmRuntime) {
+      shimDirectory = await mkdtemp(join(tmpdir(), 'dsh-ego-webqa-pnpm-'))
+      pnpmPath = join(shimDirectory, WINDOWS ? 'pnpm.cmd' : 'pnpm')
+      const shim = WINDOWS
+        ? `@echo off\r\n${quoteForCmd(pnpmRuntime.node)} ${quoteForCmd(pnpmRuntime.script)} %*\r\n`
+        : `#!/bin/sh\nexec '${pnpmRuntime.node.replaceAll("'", "'\\''")}' '${pnpmRuntime.script.replaceAll("'", "'\\''")}' "$@"\n`
+      await writeFile(pnpmPath, shim, { encoding: 'utf8', mode: 0o755 })
+    }
+    const env = {
+      ...process.env,
+      PATH: pnpmPath
+        ? `${dirname(pnpmPath)}${delimiter}${process.env.PATH || ''}`
+        : process.env.PATH || '',
+      Path: pnpmPath
+        ? `${dirname(pnpmPath)}${delimiter}${process.env.Path || process.env.PATH || ''}`
+        : process.env.Path || process.env.PATH || '',
+    }
+    const result = await runCommand(
+      dshPath,
+      ['plugin', '--profile', profile, 'add', `${PACKAGE.name}@${PACKAGE.version}`],
+      { env, timeoutMs: INSTALL_TIMEOUT_MS },
+    )
+    if (result.code !== 0) {
+      const detail = result.stderr || result.stdout || 'dsh plugin add failed'
+      const pnpmHint = pnpmPath
+        ? ''
+        : ' pnpm was not found; pass --pnpm <path> or use --dsh-home so setup can locate the DSH-bundled pnpm.'
+      throw new Error(`${detail}${pnpmHint}`)
+    }
+    return result.stdout
+  } finally {
+    if (shimDirectory) {
+      await rm(shimDirectory, { recursive: true, force: true })
+    }
   }
-  const result = await runCommand(
-    dshPath,
-    ['plugin', '--profile', profile, 'add', `${PACKAGE.name}@${PACKAGE.version}`],
-    { env, timeoutMs: INSTALL_TIMEOUT_MS },
-  )
-  if (result.code !== 0) {
-    const detail = result.stderr || result.stdout || 'dsh plugin add failed'
-    const pnpmHint = pnpmPath
-      ? ''
-      : ' pnpm was not found; pass --pnpm <path> or use --dsh-home so setup can locate the DSH-bundled pnpm.'
-    throw new Error(`${detail}${pnpmHint}`)
-  }
-  return result.stdout
 }
 
 async function prepareBrowser(uvx) {
@@ -841,7 +946,7 @@ export async function setup(options = {}) {
 
   let pluginOutput = ''
   if (!options.skipAdd) {
-    pluginOutput = await installBundle(dshPath, pnpm.path, profile)
+    pluginOutput = await installBundle(dshPath, pnpm.runtime, pnpm.path, profile)
   }
   let chromiumOutput = ''
   if (!options.skipBrowser) {

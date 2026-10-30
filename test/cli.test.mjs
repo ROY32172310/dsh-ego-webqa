@@ -7,6 +7,8 @@ import test from 'node:test'
 import { promisify } from 'node:util'
 
 import {
+  commandLineForCmd,
+  executableExtensions,
   extractPinnedVersion,
   findExecutable,
   main,
@@ -48,6 +50,17 @@ test('CLI resolves explicit executables without relying on a shell', async () =>
   const executable = process.platform === 'win32' ? process.execPath : '/bin/sh'
   assert.equal(await findExecutable('unused', executable), executable)
   assert.equal(await findExecutable('definitely-not-a-real-command'), '')
+})
+
+test('Windows command execution targets PATHEXT and invokes .cmd through call', () => {
+  assert.deepEqual(
+    executableExtensions(true, '.EXE;.CMD;.BAT;.COM'),
+    ['.exe', '.cmd', '.bat', '.com'],
+  )
+  assert.equal(
+    commandLineForCmd('C:\\Program Files\\nodejs\\dsh.cmd', ['--version']),
+    'call "C:\\Program Files\\nodejs\\dsh.cmd" "--version"',
+  )
 })
 
 test('CLI help is available without touching DSH or the network', async () => {
@@ -92,7 +105,7 @@ if [ "$1" = "--profile" ]; then
   echo "command: uvx ego-webqa@0.8.1 mcp"
   exit 0
 fi
-if [ "$1" = "plugin" ]; then echo "installed dsh-ego-webqa@0.1.6"; exit 0; fi
+if [ "$1" = "plugin" ]; then echo "installed dsh-ego-webqa@0.1.7"; exit 0; fi
 exit 1
 `,
         'utf8',
@@ -125,7 +138,7 @@ exit 1
 
       assert.equal(report.status, 'ok')
       assert.equal(report.restart_required, true)
-      assert.match(report.plugin_output, /installed dsh-ego-webqa@0\.1\.6/)
+      assert.match(report.plugin_output, /installed dsh-ego-webqa@0\.1\.7/)
       assert.match(report.chromium_output, /browser setup complete/)
       assert.equal(report.doctor.checks.find((item) => item.id === 'dsh_profile').status, 'ok')
     } finally {
