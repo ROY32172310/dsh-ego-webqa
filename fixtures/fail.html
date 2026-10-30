@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>dsh-ego-webqa verification fail</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #172033; background: #f7f9fc; }
+      main { max-width: 42rem; margin: 0 auto; padding: 32px 20px; }
+      h1 { font-size: 2rem; line-height: 1.2; }
+      .wide { width: 2400px; height: 20px; background: #e45858; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Intentional horizontal overflow</h1>
+      <p>This fixture must return a blocking horizontal_overflow finding.</p>
+      <div class="wide">overflow</div>
+    </main>
+  </body>
+</html>

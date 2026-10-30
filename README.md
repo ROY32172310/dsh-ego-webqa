@@ -14,13 +14,36 @@ The tool checks a page across the mobile matrix, returns the existing
 `agent_summary.json` contract, and retains screenshots plus `report.json` as
 evidence.
 
+## Quick start
+
+Use the setup helper when installing from Windows or when DSH, pnpm, and uvx do
+not all share the same `PATH`:
+
+```powershell
+# Read-only preflight. It does not install anything.
+npx -y dsh-ego-webqa@0.1.5 doctor --profile web
+
+# Install the bundle, prepare Chromium, and safely add uvx to user PATH if needed.
+npx -y dsh-ego-webqa@0.1.5 setup --profile web --apply-path
+
+# Fully quit DSH and start the desktop application again.
+
+# Run one clean page and one known-broken page through the real MCP server.
+npx -y dsh-ego-webqa@0.1.5 verify --url https://preview.example
+```
+
+`doctor` is read-only. `setup` fails visibly instead of silently disabling QA,
+backs up every Windows user-PATH change under `%USERPROFILE%\.dsh-ego-webqa`,
+and does not modify workspace ACLs. On a DSH installation with a bundled pnpm,
+pass `--dsh-home D:\DSH` if automatic discovery cannot find it.
+
 ## Why a bundle instead of another tool implementation
 
 DSH already ships `@deepseek-ai/dsh-mcp-client`. This package contributes one
 declarative Cordis patch row that starts:
 
 ```text
-uvx ego-webqa@0.7.0 mcp
+uvx ego-webqa@0.8.0 mcp
 ```
 
 DSH supervises that process, discovers `audit_web_page`, applies normal tool
@@ -31,22 +54,25 @@ schemas, and release compatibility.
 ## Requirements
 
 - DSH `>=0.1.5-rc.1 <0.3.0`
+- Node.js 20 or newer when using the `npx` doctor/setup/verify helper
 - `uv` / `uvx` available on `PATH`
 - A Playwright Chromium browser available to the `uvx` environment
+- pnpm available to the `dsh plugin` command; the setup helper can use a
+  DSH-bundled pnpm through `--pnpm` or `--dsh-home`
 
 Install Chromium once for the pinned ego-webqa version:
 
 ```bash
-uvx --from ego-webqa@0.7.0 playwright install chromium
+uvx --from ego-webqa==0.8.0 playwright install chromium
 ```
 
 On Linux CI hosts without a desktop browser, use:
 
 ```bash
-uvx --from ego-webqa@0.7.0 playwright install --with-deps chromium
+uvx --from ego-webqa==0.8.0 playwright install --with-deps chromium
 ```
 
-## Install
+## Manual install
 
 ```bash
 dsh plugin --profile web add dsh-ego-webqa
@@ -152,14 +178,30 @@ causes are:
 Run the underlying server directly to isolate DSH from the Python package:
 
 ```bash
-uvx ego-webqa@0.7.0 mcp
+uvx ego-webqa@0.8.0 mcp
 ```
 
 For a normal CLI audit and complete evidence, run:
 
 ```bash
-uvx ego-webqa@0.7.0 https://preview.example --out .qa/dsh
+uvx ego-webqa@0.8.0 https://preview.example --out .qa/dsh
 ```
+
+### Windows startup and workspace failures
+
+- If `dsh plugin` reports that pnpm is unavailable, pass the pnpm path
+  explicitly: `setup --pnpm <path-to-pnpm.cmd>`. A temporary shim works for one
+  machine, but a user-level pnpm or DSH-bundled pnpm is more durable.
+- If `uvx` is installed but DSH cannot see it, use `setup --apply-path`. The
+  original user PATH is saved before any change. A complete DSH restart is
+  required because desktop processes do not necessarily receive a new PATH
+  immediately.
+- If the workspace itself is unreadable or unwritable, the plugin cannot repair
+  that safely. Choose a user-owned workspace or run the machine-specific ACL
+  recovery procedure explicitly. The setup helper never broadens ACLs.
+- A successful MCP handshake proves tool discovery, not page auditing. Run
+  `verify` to execute one passing and one intentionally failing page through
+  `audit_web_page`.
 
 ## License
 

@@ -1,6 +1,6 @@
 {
   "name": "dsh-ego-webqa",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": false,
   "type": "module",
   "description": "Install ego-webqa's deterministic web-delivery audit as a DSH MCP tool.",
@@ -22,17 +22,23 @@
   },
   "author": "Roy",
   "license": "MIT",
+  "bin": {
+    "dsh-ego-webqa": "./bin/dsh-ego-webqa.mjs"
+  },
   "publishConfig": {
     "access": "public",
     "provenance": true
   },
   "files": [
+    "bin/",
     "cordis.patch.yml",
+    "fixtures/",
     "icon.svg",
     "README.md",
     "LICENSE"
   ],
   "engines": {
+    "node": ">=20",
     "dsh": ">=0.1.5-rc.1 <0.3.0"
   },
   "dsh": {

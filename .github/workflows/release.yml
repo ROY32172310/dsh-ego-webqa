@@ -36,7 +36,8 @@ jobs:
           test "$GITHUB_REF_NAME" = "v$version"
       - run: npm test
       - run: npm run check
-      - run: npm pack --dry-run
+      - run: node bin/dsh-ego-webqa.mjs --help
+      - run: npm pack --dry-run --json
       - name: Publish package
         run: npm publish --access public --provenance
       - name: Verify package is publicly visible

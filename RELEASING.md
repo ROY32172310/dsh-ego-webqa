@@ -49,7 +49,15 @@ no longer appear as a successful public release.
    npm ci --legacy-peer-deps
    npm test
    npm run check
-   npm pack --dry-run
+   node bin/dsh-ego-webqa.mjs --help
+   npm pack --dry-run --json
+   ```
+
+   Run the real two-fixture MCP acceptance before tagging when the pinned QA
+   release and a local Chromium are available:
+
+   ```bash
+   node bin/dsh-ego-webqa.mjs verify
    ```
 
 4. Commit, tag, and push with the durable Git identity:
