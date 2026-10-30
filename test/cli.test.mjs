@@ -86,7 +86,7 @@ test(
 )
 
 test(
-  'setup discovers the supplied DSH toolchain and installs the exact bundle',
+  'setup upgrades the supplied profile from the previous pin to the exact bundle',
   { skip: process.platform === 'win32' },
   async () => {
     const directory = await mkdtemp(resolve(tmpdir(), 'dsh-ego-webqa-setup-'))
@@ -95,6 +95,8 @@ test(
       const dsh = resolve(directory, 'dsh')
       const pnpm = resolve(directory, 'pnpm')
       const uvx = resolve(directory, 'uvx')
+      const installedState = resolve(directory, 'installed')
+      const invocations = resolve(directory, 'invocations')
       await writeFile(
         dsh,
         `#!/bin/sh
@@ -102,10 +104,19 @@ if [ "$1" = "--version" ]; then echo "0.2.1"; exit 0; fi
 if [ "$1" = "--profile" ]; then
   echo "id: ego-webqa"
   echo "serverName: ego_webqa"
-  echo "command: uvx ego-webqa@0.8.2 mcp"
+  if [ -f "${installedState}" ]; then
+    echo "command: uvx ego-webqa@0.8.2 mcp"
+  else
+    echo "command: uvx ego-webqa@0.8.1 mcp"
+  fi
   exit 0
 fi
-if [ "$1" = "plugin" ]; then echo "installed dsh-ego-webqa@0.1.8"; exit 0; fi
+if [ "$1" = "plugin" ]; then
+  echo "$*" >> "${invocations}"
+  touch "${installedState}"
+  echo "installed dsh-ego-webqa@0.1.8"
+  exit 0
+fi
 exit 1
 `,
         'utf8',
@@ -141,6 +152,10 @@ exit 1
       assert.match(report.plugin_output, /installed dsh-ego-webqa@0\.1\.8/)
       assert.match(report.chromium_output, /browser setup complete/)
       assert.equal(report.doctor.checks.find((item) => item.id === 'dsh_profile').status, 'ok')
+      assert.equal(
+        await readFile(invocations, 'utf8'),
+        'plugin --profile web add dsh-ego-webqa@0.1.8\n',
+      )
     } finally {
       process.env.PATH = previousPath
       await rm(directory, { recursive: true, force: true })
