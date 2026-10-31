@@ -62,6 +62,7 @@ test('release workflow verifies public registry visibility', async () => {
   assert.match(workflow, /if: steps\.npm-version\.outputs\.published != 'true'/)
   assert.match(workflow, /Verify package is publicly visible/)
   assert.match(workflow, /npm view "\$\{package\}@\$\{version\}" version/)
+  assert.match(workflow, /attempt \$\{attempt\}\/36/)
   assert.match(workflow, /Trusted Publisher's direct 'npm publish' permission/)
 })
 

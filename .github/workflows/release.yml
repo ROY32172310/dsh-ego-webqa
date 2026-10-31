@@ -67,7 +67,7 @@ jobs:
               echo "Verified ${package}@${version} in the public npm registry."
               exit 0
             fi
-            echo "Registry is not visible yet (attempt ${attempt}/18); retrying in 5s."
+            echo "Registry is not visible yet (attempt ${attempt}/36); retrying in 5s."
             sleep 5
           done
 
