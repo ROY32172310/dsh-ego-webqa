@@ -57,6 +57,9 @@ test('documents prerequisites, tool name, and the one-tool boundary', async () =
 test('release workflow verifies public registry visibility', async () => {
   const workflow = await read('.github/workflows/release.yml')
 
+  assert.match(workflow, /Check whether this version is already public/)
+  assert.match(workflow, /id: npm-version/)
+  assert.match(workflow, /if: steps\.npm-version\.outputs\.published != 'true'/)
   assert.match(workflow, /Verify package is publicly visible/)
   assert.match(workflow, /npm view "\$\{package\}@\$\{version\}" version/)
   assert.match(workflow, /Trusted Publisher's direct 'npm publish' permission/)
